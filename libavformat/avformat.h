@@ -2106,7 +2106,7 @@ AVProgram *av_new_program(AVFormatContext *s, int id);
  */
 
 
-/**
+/**创建一个AVFormatContext，成功返回非负数，输出格式可以是flv mkv,等等
  * Allocate an AVFormatContext for an output format.
  * avformat_free_context() can be used to free the context and
  * everything allocated by the framework within it.

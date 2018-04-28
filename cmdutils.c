@@ -124,7 +124,7 @@ void init_dynload(void)
     SetDllDirectory("");
 #endif
 }
-
+//声明静态的函数指针变量，用于程序退出的回调
 static void (*program_exit)(int ret);
 
 void register_exit(void (*cb)(int ret))

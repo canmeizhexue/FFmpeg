@@ -142,9 +142,9 @@ void av_fast_padded_mallocz(void *ptr, unsigned int *size, size_t min_size)
 }
 
 /* encoder management */
-static AVCodec *first_avcodec = NULL;
+static AVCodec *first_avcodec = NULL;//编码器和解码器共用了一个链表？
 static AVCodec **last_avcodec = &first_avcodec;
-
+//返回链表第一个或者指定的编码器的下一个，
 AVCodec *av_codec_next(const AVCodec *c)
 {
     if (c)
@@ -164,19 +164,22 @@ static av_cold void avcodec_init(void)
     if (CONFIG_ME_CMP)
         ff_me_cmp_init_static();
 }
-
+//判断是否为编码器，
 int av_codec_is_encoder(const AVCodec *codec)
 {
+    //三个函数指针只要有一个不为null就是编码器
     return codec && (codec->encode_sub || codec->encode2 ||codec->send_frame);
 }
-
+//判断是否为解码器，
 int av_codec_is_decoder(const AVCodec *codec)
 {
+    //俩个函数指针只要有一个不为null就是解码器
     return codec && (codec->decode || codec->send_packet);
 }
-
+//将指定的编解码器加入链表尾部
 av_cold void avcodec_register(AVCodec *codec)
 {
+    //二级指针，加入链表尾部，
     AVCodec **p;
     avcodec_init();
     p = last_avcodec;
@@ -1243,20 +1246,21 @@ int attribute_align_arg ff_codec_open2_recursive(AVCodecContext *avctx, const AV
     ff_lock_avcodec(avctx, codec);
     return ret;
 }
-
+//将AVCodecContext和AVCodec进行关联，
 int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options)
 {
     int ret = 0;
     AVDictionary *tmp = NULL;
     const AVPixFmtDescriptor *pixdesc;
-
+    //其实这个地方就是判断internal变量是否为null,
     if (avcodec_is_open(avctx))
         return 0;
-
+    //俩者都为null
     if ((!codec && !avctx->codec)) {
         av_log(avctx, AV_LOG_ERROR, "No codec provided to avcodec_open2()\n");
         return AVERROR(EINVAL);
     }
+    //俩者都不为null，但是不是同一个，
     if ((codec && avctx->codec && codec != avctx->codec)) {
         av_log(avctx, AV_LOG_ERROR, "This AVCodecContext was allocated for %s, "
                                     "but %s passed to avcodec_open2()\n", avctx->codec->name, codec->name);
@@ -1270,17 +1274,17 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
 
     if (options)
         av_dict_copy(&tmp, *options, 0);
-
+    //多线程处理，
     ret = ff_lock_avcodec(avctx, codec);
     if (ret < 0)
         return ret;
-
+    //为internal指针分配空间，
     avctx->internal = av_mallocz(sizeof(AVCodecInternal));
     if (!avctx->internal) {
         ret = AVERROR(ENOMEM);
         goto end;
     }
-
+//为internal的pool指针分配空间，
     avctx->internal->pool = av_mallocz(sizeof(*avctx->internal->pool));
     if (!avctx->internal->pool) {
         ret = AVERROR(ENOMEM);
@@ -1304,9 +1308,10 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
         ret = AVERROR(ENOMEM);
         goto free_and_end;
     }
-
+    //为AVCodecContext的变量分配空间，
     if (codec->priv_data_size > 0) {
         if (!avctx->priv_data) {
+            //指针变量分配空间，
             avctx->priv_data = av_mallocz(codec->priv_data_size);
             if (!avctx->priv_data) {
                 ret = AVERROR(ENOMEM);
@@ -1368,7 +1373,7 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
         ret = AVERROR(EINVAL);
         goto free_and_end;
     }
-
+    //给AVCodecContext关联AVCodec
     avctx->codec = codec;
     if ((avctx->codec_type == AVMEDIA_TYPE_UNKNOWN || avctx->codec_type == codec->type) &&
         avctx->codec_id == AV_CODEC_ID_NONE) {
@@ -1956,7 +1961,7 @@ end:
 
     return ret;
 }
-
+//将AVFrame通过编码器编码变成AVPacket????
 int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
                                               AVPacket *avpkt,
                                               const AVFrame *frame,
@@ -1996,7 +2001,7 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_WARNING, "AVFrame.width or height is not set\n");
 
     av_assert0(avctx->codec->encode2);
-
+    //调用编码器的编码函数，得到AVPacket???
     ret = avctx->codec->encode2(avctx, avpkt, frame, got_packet_ptr);
     av_assert0(ret <= 0);
 
@@ -3086,7 +3091,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     return 0;
 }
-
+//重新隐射已经废弃的id，
 static enum AVCodecID remap_deprecated_codec_id(enum AVCodecID id)
 {
     switch(id){
@@ -3095,7 +3100,7 @@ static enum AVCodecID remap_deprecated_codec_id(enum AVCodecID id)
         default                                         : return id;
     }
 }
-
+//第二个参数大于0表示找编码器，否则找解码器，通过id找到编码器或者解码器，
 static AVCodec *find_encdec(enum AVCodecID id, int encoder)
 {
     AVCodec *p, *experimental = NULL;
@@ -3113,12 +3118,12 @@ static AVCodec *find_encdec(enum AVCodecID id, int encoder)
     }
     return experimental;
 }
-
+//根据id找到AVCodec,,
 AVCodec *avcodec_find_encoder(enum AVCodecID id)
 {
     return find_encdec(id, 1);
 }
-
+//根据名字找到AVCodec,
 AVCodec *avcodec_find_encoder_by_name(const char *name)
 {
     AVCodec *p;
@@ -3132,12 +3137,12 @@ AVCodec *avcodec_find_encoder_by_name(const char *name)
     }
     return NULL;
 }
-
+//根据id找解码器
 AVCodec *avcodec_find_decoder(enum AVCodecID id)
 {
     return find_encdec(id, 0);
 }
-
+//根据名字找解码器
 AVCodec *avcodec_find_decoder_by_name(const char *name)
 {
     AVCodec *p;

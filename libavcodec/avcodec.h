@@ -3644,7 +3644,7 @@ struct AVSubtitle;
  * AVCodec.
  */
 typedef struct AVCodec {
-    /**
+    /**名字在编码器内部、解码器内部都是唯一的，但是可能会有编码器和解码器都叫同一个名字，
      * Name of the codec implementation.
      * The name is globally unique among encoders and among decoders (but an
      * encoder and a decoder can share the same name).

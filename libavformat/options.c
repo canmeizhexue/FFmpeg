@@ -116,7 +116,7 @@ static void io_close_default(AVFormatContext *s, AVIOContext *pb)
 {
     avio_close(pb);
 }
-
+//设置一些默认值，
 static void avformat_get_context_defaults(AVFormatContext *s)
 {
     memset(s, 0, sizeof(AVFormatContext));
@@ -132,7 +132,7 @@ static void avformat_get_context_defaults(AVFormatContext *s)
 AVFormatContext *avformat_alloc_context(void)
 {
     AVFormatContext *ic;
-    ic = av_malloc(sizeof(AVFormatContext));
+    ic = av_malloc(sizeof(AVFormatContext));//分配内存，主要是有一些对齐操作，
     if (!ic) return ic;
     avformat_get_context_defaults(ic);
 

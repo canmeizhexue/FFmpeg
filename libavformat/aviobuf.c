@@ -77,7 +77,7 @@ const AVClass ff_avio_class = {
 
 static void fill_buffer(AVIOContext *s);
 static int url_resetbuf(AVIOContext *s, int flags);
-
+//初始化第一个参数标识的AVIOContext对象，
 int ffio_init_context(AVIOContext *s,
                   unsigned char *buffer,
                   int buffer_size,
@@ -123,7 +123,7 @@ int ffio_init_context(AVIOContext *s,
 
     return 0;
 }
-
+//动态分配一个AVIOContext对象，并进行初始化，
 AVIOContext *avio_alloc_context(
                   unsigned char *buffer,
                   int buffer_size,
@@ -133,6 +133,7 @@ AVIOContext *avio_alloc_context(
                   int (*write_packet)(void *opaque, uint8_t *buf, int buf_size),
                   int64_t (*seek)(void *opaque, int64_t offset, int whence))
 {
+    //动态生成一个AVIOContext对象，
     AVIOContext *s = av_mallocz(sizeof(AVIOContext));
     if (!s)
         return NULL;
@@ -849,13 +850,13 @@ uint64_t ffio_read_varlen(AVIOContext *bc){
     }while(tmp&128);
     return val;
 }
-
+//io读包，
 static int io_read_packet(void *opaque, uint8_t *buf, int buf_size)
 {
     AVIOInternal *internal = opaque;
     return ffurl_read(internal->h, buf, buf_size);
 }
-
+//io写包，
 static int io_write_packet(void *opaque, uint8_t *buf, int buf_size)
 {
     AVIOInternal *internal = opaque;
@@ -889,7 +890,7 @@ static int64_t io_read_seek(void *opaque, int stream_index, int64_t timestamp, i
         return AVERROR(ENOSYS);
     return internal->h->prot->url_read_seek(internal->h, stream_index, timestamp, flags);
 }
-
+//动态生成一个AVIOContext对象，并且通过第一个参数返回给调用者
 int ffio_fdopen(AVIOContext **s, URLContext *h)
 {
     AVIOInternal *internal = NULL;
@@ -905,7 +906,7 @@ int ffio_fdopen(AVIOContext **s, URLContext *h)
     buffer = av_malloc(buffer_size);
     if (!buffer)
         return AVERROR(ENOMEM);
-
+    //动态生成一个AVIOInternal对象，
     internal = av_mallocz(sizeof(*internal));
     if (!internal)
         goto fail;
@@ -916,7 +917,7 @@ int ffio_fdopen(AVIOContext **s, URLContext *h)
                             internal, io_read_packet, io_write_packet, io_seek);
     if (!*s)
         goto fail;
-
+    //复制白名单和黑名单
     (*s)->protocol_whitelist = av_strdup(h->protocol_whitelist);
     if (!(*s)->protocol_whitelist && h->protocol_whitelist) {
         avio_closep(s);
@@ -1057,7 +1058,7 @@ int ffio_open_whitelist(AVIOContext **s, const char *filename, int flags,
                          const char *whitelist, const char *blacklist
                         )
 {
-    URLContext *h;
+    URLContext *h;//输出参数，
     int err;
 
     err = ffurl_open_whitelist(&h, filename, flags, int_cb, options, whitelist, blacklist, NULL);
@@ -1070,7 +1071,8 @@ int ffio_open_whitelist(AVIOContext **s, const char *filename, int flags,
     }
     return 0;
 }
-
+//根据文件名从系统协议列表里面找到一个URLProtocol,然后为这个URLProtocol动态生成一个URLContext对象，用这个URLContext作为参数调用URLProtocol的打开函数，
+//之后动态生成一个AVIOInternal对象，用AVIOInternal和URLContext进行关联，AVIOContext和AVIOInternal进行关联，
 int avio_open2(AVIOContext **s, const char *filename, int flags,
                const AVIOInterruptCB *int_cb, AVDictionary **options)
 {

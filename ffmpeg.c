@@ -22,7 +22,7 @@
  * @file
  * multimedia converter based on the FFmpeg libraries
  */
-
+//config.h是由configure配置过程自动产生的配置选项文件，会对下面的条件编译产生作用
 #include "config.h"
 #include <ctype.h>
 #include <string.h>
@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <stdint.h>
 
+//条件编译，
 #if HAVE_IO_H
 #include <io.h>
 #endif
@@ -66,6 +67,7 @@
 # include "libavfilter/buffersrc.h"
 # include "libavfilter/buffersink.h"
 
+//if   else结构，
 #if HAVE_SYS_RESOURCE_H
 #include <sys/time.h>
 #include <sys/types.h>
@@ -4535,7 +4537,7 @@ static int64_t getmaxrss(void)
 static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
 {
 }
-
+//第一个参数名是本程序的完整路径
 int main(int argc, char **argv)
 {
     int i, ret;
@@ -4543,6 +4545,7 @@ int main(int argc, char **argv)
 
     init_dynload();
 
+    //注册程序退出时候的回调
     register_exit(ffmpeg_cleanup);
 
     setvbuf(stderr,NULL,_IONBF,0); /* win32 runtime needs this */
@@ -4562,6 +4565,7 @@ int main(int argc, char **argv)
     avdevice_register_all();
 #endif
     avfilter_register_all();
+    //注册复用器、编码器
     av_register_all();
     avformat_network_init();
 

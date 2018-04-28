@@ -3249,7 +3249,7 @@ int ffmpeg_parse_options(int argc, char **argv)
     OptionParseContext octx;
     uint8_t error[128];
     int ret;
-
+    //清零
     memset(&octx, 0, sizeof(octx));
 
     /* split the commandline into an internal representation */

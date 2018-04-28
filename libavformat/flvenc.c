@@ -731,7 +731,7 @@ static int flv_write_header(AVFormatContext *s)
     }
 
     flv->delay = AV_NOPTS_VALUE;
-
+    //调用写函数，
     avio_write(pb, "FLV", 3);
     avio_w8(pb, 1);
     avio_w8(pb, FLV_HEADER_FLAG_HASAUDIO * !!flv->audio_par +

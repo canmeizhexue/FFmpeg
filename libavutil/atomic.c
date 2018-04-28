@@ -87,7 +87,7 @@ int avpriv_atomic_int_add_and_fetch(volatile int *ptr, int inc)
     *ptr += inc;
     return *ptr;
 }
-
+//指针的原子替换操作，当等于旧值的时候，才替换成新值，替换成功的话返回旧值，替换失败返回原来的值，
 void *avpriv_atomic_ptr_cas(void * volatile *ptr, void *oldval, void *newval)
 {
     if (*ptr == oldval) {

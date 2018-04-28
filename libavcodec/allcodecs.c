@@ -28,27 +28,28 @@
 #include "avcodec.h"
 #include "version.h"
 
+//宏定义，##用来拼接字符串 ,,注册硬件加速器
 #define REGISTER_HWACCEL(X, x)                                          \
     {                                                                   \
         extern AVHWAccel ff_##x##_hwaccel;                              \
         if (CONFIG_##X##_HWACCEL)                                       \
             av_register_hwaccel(&ff_##x##_hwaccel);                     \
     }
-
+//注册编码器
 #define REGISTER_ENCODER(X, x)                                          \
     {                                                                   \
         extern AVCodec ff_##x##_encoder;                                \
         if (CONFIG_##X##_ENCODER)                                       \
             avcodec_register(&ff_##x##_encoder);                        \
     }
-
+//注册解码器
 #define REGISTER_DECODER(X, x)                                          \
     {                                                                   \
         extern AVCodec ff_##x##_decoder;                                \
         if (CONFIG_##X##_DECODER)                                       \
             avcodec_register(&ff_##x##_decoder);                        \
     }
-
+//注册编解码器
 #define REGISTER_ENCDEC(X, x) REGISTER_ENCODER(X, x); REGISTER_DECODER(X, x)
 
 #define REGISTER_PARSER(X, x)                                           \
@@ -126,6 +127,7 @@ void avcodec_register_all(void)
     REGISTER_HWACCEL(WMV3_VAAPI,        wmv3_vaapi);
     REGISTER_HWACCEL(WMV3_VDPAU,        wmv3_vdpau);
 
+    //视频编解码器
     /* video codecs */
     REGISTER_ENCODER(A64MULTI,          a64multi);
     REGISTER_ENCODER(A64MULTI5,         a64multi5);
@@ -392,6 +394,7 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (ZLIB,              zlib);
     REGISTER_ENCDEC (ZMBV,              zmbv);
 
+    //音频编解码器
     /* audio codecs */
     REGISTER_ENCDEC (AAC,               aac);
     REGISTER_DECODER(AAC_FIXED,         aac_fixed);

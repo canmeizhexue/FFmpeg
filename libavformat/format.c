@@ -49,7 +49,7 @@ AVInputFormat *av_iformat_next(const AVInputFormat *f)
     else
         return first_iformat;
 }
-
+//输出格式是一个链表，
 AVOutputFormat *av_oformat_next(const AVOutputFormat *f)
 {
     if (f)
@@ -60,6 +60,7 @@ AVOutputFormat *av_oformat_next(const AVOutputFormat *f)
 
 void av_register_input_format(AVInputFormat *format)
 {
+    //二级指针，
     AVInputFormat **p = last_iformat;
 
     // Note, format could be added after the first 2 checks but that implies that *p is no longer NULL
@@ -72,12 +73,13 @@ void av_register_input_format(AVInputFormat *format)
 
 void av_register_output_format(AVOutputFormat *format)
 {
+    //加入链表尾部，
     AVOutputFormat **p = last_oformat;
 
     // Note, format could be added after the first 2 checks but that implies that *p is no longer NULL
     while(p != &format->next && !format->next && avpriv_atomic_ptr_cas((void * volatile *)p, NULL, format))
         p = &(*p)->next;
-
+    //指针变量的值为空，但是指针变量还是有空间有地址的，
     if (!format->next)
         last_oformat = &format->next;
 }
@@ -94,7 +96,7 @@ int av_match_ext(const char *filename, const char *extensions)
         return av_match_name(ext + 1, extensions);
     return 0;
 }
-
+//根据简称、多媒体类型、文件扩展名到之前创建好的链表里面去匹配输出格式，
 AVOutputFormat *av_guess_format(const char *short_name, const char *filename,
                                 const char *mime_type)
 {
@@ -112,7 +114,9 @@ AVOutputFormat *av_guess_format(const char *short_name, const char *filename,
     /* Find the proper file type. */
     fmt_found = NULL;
     score_max = 0;
+    //根据下面的匹配算法从链表里面找，链表之前注册的，
     while ((fmt = av_oformat_next(fmt))) {
+        //null，0都是假，
         score = 0;
         if (fmt->name && short_name && av_match_name(short_name, fmt->name))
             score += 100;

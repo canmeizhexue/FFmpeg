@@ -88,7 +88,7 @@ static const AVClass av_codec_context_class = {
     .category                = AV_CLASS_CATEGORY_ENCODER,
     .get_category            = get_category,
 };
-
+//初始化AVCodecContext,,
 static int init_context_defaults(AVCodecContext *s, const AVCodec *codec)
 {
     int flags=0;
@@ -152,9 +152,10 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec)
     return init_context_defaults(s, codec);
 }
 #endif
-
+//动态分配一个AVCodecContext,并且将AVCodecContext和AVCodec进行关联，
 AVCodecContext *avcodec_alloc_context3(const AVCodec *codec)
 {
+    //动态分配AVCodecContext
     AVCodecContext *avctx= av_malloc(sizeof(AVCodecContext));
 
     if (!avctx)

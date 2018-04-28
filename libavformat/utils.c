@@ -390,7 +390,7 @@ int av_demuxer_open(AVFormatContext *ic) {
     return 0;
 }
 
-/* Open input file and probe the format if necessary. */
+/* 打开输入文件，检测文件格式，Open input file and probe the format if necessary. */
 static int init_input(AVFormatContext *s, const char *filename,
                       AVDictionary **options)
 {
@@ -4245,7 +4245,7 @@ AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
     if (!streams)
         return NULL;
     s->streams = streams;
-
+    //动态分配一个AVStream,
     st = av_mallocz(sizeof(AVStream));
     if (!st)
         return NULL;
@@ -4265,11 +4265,11 @@ FF_DISABLE_DEPRECATION_WARNINGS
     }
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
-
+    //动态分配AVStreamInternal
     st->internal = av_mallocz(sizeof(*st->internal));
     if (!st->internal)
         goto fail;
-
+    //codec的参数，
     st->codecpar = avcodec_parameters_alloc();
     if (!st->codecpar)
         goto fail;

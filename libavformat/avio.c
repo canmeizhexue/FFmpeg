@@ -69,7 +69,7 @@ const AVClass ffurl_context_class = {
     .child_class_next = ff_urlcontext_child_class_next,
 };
 /*@}*/
-
+//动态产生一个URLContext对象，
 static int url_alloc_for_protocol(URLContext **puc, const URLProtocol *up,
                                   const char *filename, int flags,
                                   const AVIOInterruptCB *int_cb)
@@ -91,19 +91,21 @@ static int url_alloc_for_protocol(URLContext **puc, const URLProtocol *up,
                "Impossible to open the '%s' protocol for writing\n", up->name);
         return AVERROR(EIO);
     }
+    //动态分配一个URLContext,为什么多分配长度，
     uc = av_mallocz(sizeof(URLContext) + strlen(filename) + 1);
     if (!uc) {
         err = AVERROR(ENOMEM);
         goto fail;
     }
     uc->av_class = &ffurl_context_class;
-    uc->filename = (char *)&uc[1];
+    uc->filename = (char *)&uc[1];//多分配的内存在这里，居然还可以这样转换，强悍啊，
     strcpy(uc->filename, filename);
-    uc->prot            = up;
+    uc->prot            = up;//URLContext和URLProtocol进行关联，
     uc->flags           = flags;
     uc->is_streamed     = 0; /* default = not streamed */
     uc->max_packet_size = 0; /* default: stream file */
     if (up->priv_data_size) {
+        //分配内存空间，
         uc->priv_data = av_mallocz(up->priv_data_size);
         if (!uc->priv_data) {
             err = AVERROR(ENOMEM);
@@ -149,7 +151,7 @@ static int url_alloc_for_protocol(URLContext **puc, const URLProtocol *up,
     if (int_cb)
         uc->interrupt_callback = *int_cb;
 
-    *puc = uc;
+    *puc = uc;//进行赋值，传递给调用者，
     return 0;
 fail:
     *puc = NULL;
@@ -201,7 +203,7 @@ int ffurl_connect(URLContext *uc, AVDictionary **options)
         return err;
     if ((err = av_dict_set(options, "protocol_blacklist", uc->protocol_blacklist, 0)) < 0)
         return err;
-
+    //判断调用哪个版本的open函数，
     err =
         uc->prot->url_open2 ? uc->prot->url_open2(uc,
                                                   uc->filename,
@@ -214,7 +216,7 @@ int ffurl_connect(URLContext *uc, AVDictionary **options)
 
     if (err)
         return err;
-    uc->is_connected = 1;
+    uc->is_connected = 1;//设置标志，
     /* We must be careful here as ffurl_seek() could be slow,
      * for example for http */
     if ((uc->flags & AVIO_FLAG_WRITE) || !strcmp(uc->prot->name, "file"))
@@ -247,14 +249,14 @@ int ffurl_handshake(URLContext *c)
     "abcdefghijklmnopqrstuvwxyz"                \
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"                \
     "0123456789+-."
-
+//从文件名里面找到协议名，然后从系统的协议列表里面找到对应的协议，
 static const struct URLProtocol *url_find_protocol(const char *filename)
 {
     const URLProtocol **protocols;
     char proto_str[128], proto_nested[128], *ptr;
-    size_t proto_len = strspn(filename, URL_SCHEME_CHARS);
+    size_t proto_len = strspn(filename, URL_SCHEME_CHARS);//长度，
     int i;
-
+    //字符串处理，
     if (filename[proto_len] != ':' &&
         (strncmp(filename, "subfile,", 8) || !strchr(filename + proto_len + 1, ':')) ||
         is_dos_path(filename))
@@ -275,6 +277,7 @@ static const struct URLProtocol *url_find_protocol(const char *filename)
     for (i = 0; protocols[i]; i++) {
             const URLProtocol *up = protocols[i];
         if (!strcmp(proto_str, up->name)) {
+            //字符串比较，一样的时候返回0，
             av_freep(&protocols);
             return up;
         }
@@ -288,12 +291,12 @@ static const struct URLProtocol *url_find_protocol(const char *filename)
 
     return NULL;
 }
-
+//根据第二个参数文件名动态产生URLContext,
 int ffurl_alloc(URLContext **puc, const char *filename, int flags,
                 const AVIOInterruptCB *int_cb)
 {
     const URLProtocol *p = NULL;
-
+    //从文件名里面找到协议名，然后从系统的协议列表里面找到对应的协议，
     p = url_find_protocol(filename);
     if (p)
        return url_alloc_for_protocol(puc, p, filename, flags, int_cb);
@@ -305,7 +308,7 @@ int ffurl_alloc(URLContext **puc, const char *filename, int flags,
                                      "or securetransport enabled.\n");
     return AVERROR_PROTOCOL_NOT_FOUND;
 }
-
+//URLContext是输出参数，动态生成，
 int ffurl_open_whitelist(URLContext **puc, const char *filename, int flags,
                          const AVIOInterruptCB *int_cb, AVDictionary **options,
                          const char *whitelist, const char* blacklist,
@@ -313,6 +316,7 @@ int ffurl_open_whitelist(URLContext **puc, const char *filename, int flags,
 {
     AVDictionary *tmp_opts = NULL;
     AVDictionaryEntry *e;
+    //根据文件名动态产生URLContext,
     int ret = ffurl_alloc(puc, filename, flags, int_cb);
     if (ret < 0)
         return ret;
@@ -375,7 +379,7 @@ static inline int retry_transfer_wrapper(URLContext *h, uint8_t *buf,
     while (len < size_min) {
         if (ff_check_interrupt(&h->interrupt_callback))
             return AVERROR_EXIT;
-        ret = transfer_func(h, buf + len, size - len);
+        ret = transfer_func(h, buf + len, size - len);//其实是URLProtocol的相关函数，
         if (ret == AVERROR(EINTR))
             continue;
         if (h->flags & AVIO_FLAG_NONBLOCK)

@@ -107,13 +107,13 @@ const char *avio_enum_protocols(void **opaque, int output)
         return (*p)->name;
     return avio_enum_protocols(opaque, output);
 }
-
+//配置阶段会生成所有的协议，这里是从所有协议里面找一个子集，在白名单中但是不在黑名单中，
 const URLProtocol **ffurl_get_protocols(const char *whitelist,
                                         const char *blacklist)
 {
     const URLProtocol **ret;
     int i, ret_idx = 0;
-
+    //url_protocols是配置阶段生成的，
     ret = av_mallocz_array(FF_ARRAY_ELEMS(url_protocols), sizeof(*ret));
     if (!ret)
         return NULL;

@@ -144,19 +144,21 @@ enum AVChromaLocation ff_choose_chroma_location(AVFormatContext *s, AVStream *st
     return AVCHROMA_LOC_UNSPECIFIED;
 
 }
-
+//用后面三个参数产生一个对象，由第一个参数返回给调用者，第一个参数还会和第二个参数进行关联，
 int avformat_alloc_output_context2(AVFormatContext **avctx, AVOutputFormat *oformat,
                                    const char *format, const char *filename)
 {
+    //里面有很多指针变量，函数指针，这是一个通用的，
     AVFormatContext *s = avformat_alloc_context();
     int ret = 0;
 
-    *avctx = NULL;
+    *avctx = NULL;//清零，
     if (!s)
-        goto nomem;
+        goto nomem;//内存不够
 
     if (!oformat) {
         if (format) {
+            //其实是从链表里面找的，
             oformat = av_guess_format(format, NULL, NULL);
             if (!oformat) {
                 av_log(s, AV_LOG_ERROR, "Requested output format '%s' is not a suitable output format\n", format);
